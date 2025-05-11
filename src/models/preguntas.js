@@ -31,4 +31,4 @@ const preguntaSchema = mongoose.Schema({
         required: true
     }
 })
-module.exports = mongoose.model("Preguntas", preguntaSchema)
+module.exports = mongoose.model("Preguntas", preguntaSchema);
