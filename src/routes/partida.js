@@ -29,7 +29,7 @@ router.get("/partidas/:id", (req, res) => {
         .catch((error) => res.status(500).json({ message: error }));
 });
 
-// Actualizar una partida (PUT /partidas/:id)
+// Actualizar una partida 
 router.put("/partidas/:id", (req, res) => {
     const { id } = req.params;
     const { fechaFin, puntajeFinal } = req.body;
@@ -41,7 +41,7 @@ router.put("/partidas/:id", (req, res) => {
     .catch((error) => res.status(500).json({ message: error }));
 });
 
-// Eliminar una partida (DELETE /partidas/:id)
+// Eliminar una partida 
 router.delete("/partidas/:id", (req, res) => {
     const { id } = req.params;
     partidaSchema.findByIdAndDelete(id)
