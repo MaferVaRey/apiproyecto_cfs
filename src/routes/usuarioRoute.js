@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const userController = require('../controllers/usuarioController');
+const userController = require('../controllers/usuarioController.js');
 
 // Rutas públicas
 router.post('/signup', userController.signup);

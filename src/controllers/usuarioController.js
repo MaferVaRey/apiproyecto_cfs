@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const Usuario = require('../models/usuarioModel');
+const Usuario = require('../models/usuarioModel.js');
 
 const signToken = (usuario) => {
     return jwt.sign(
@@ -62,22 +62,61 @@ exports.login = async (req, res) => {
 // Middleware: proteger rutas con JWT
 exports.protect = async (req, res, next) => {
     let token;
-    if (req.headers.authorization?.startsWith('Bearer')) {
-        token = req.headers.authorization.split(' ')[1];
+
+    // 1. Validar formato del token
+    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+        const [bearer, receivedToken] = req.headers.authorization.split(' ');
+        if (bearer !== 'Bearer' || !receivedToken) {
+            return res.status(401).json({ 
+                status: 'fail', 
+                message: 'Formato de token inválido' 
+            });
+        }
+        token = receivedToken;
     }
+
     if (!token) {
-        return res.status(401).json({ status: 'fail', message: 'No autenticado.' });
+        return res.status(401).json({ 
+            status: 'fail', 
+            message: 'No autenticado. Por favor inicia sesión' 
+        });
     }
 
     try {
+        // 2. Verificar token
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        
+        if (!decoded?.id) {
+            return res.status(401).json({ 
+                status: 'fail', 
+                message: 'Token inválido' 
+            });
+        }
+
+        // 3. Verificar existencia del usuario
         const usuario = await Usuario.findById(decoded.id);
-        if (!usuario) throw new Error('Usuario no encontrado.');
+        if (!usuario) {
+            return res.status(401).json({ 
+                status: 'fail', 
+                message: 'El usuario asociado al token ya no existe' 
+            });
+        }
 
         req.usuario = usuario;
         next();
+
     } catch (err) {
-        res.status(401).json({ status: 'fail', message: 'Token inválido o expirado.' });
+        // 4. Manejar JWT expirado explícitamente
+        if (err.name === 'TokenExpiredError') {
+            return res.status(401).json({ 
+                status: 'fail', 
+                message: 'Token expirado' 
+            });
+        }
+        res.status(401).json({ 
+            status: 'fail', 
+            message: 'Token inválido' 
+        });
     }
 };
 
