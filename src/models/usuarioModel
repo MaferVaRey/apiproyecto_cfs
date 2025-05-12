@@ -3,10 +3,10 @@ const bcrypt = require('bcrypt');
 
 const usuarioSchema = new mongoose.Schema({
 
+    nombreUsuario: { type: String, required: true, unique: true },
     nombre: { type: String, required: true },
     apellido: { type: String, required: true },
     correo: { type: String, required: true, unique: true, lowercase: true },
-    nombreUsuario: { type: String, required: true, unique: true },
     contrasena: { type: String, required: true },
     rol: { type: String, enum: ['jugador', 'administrador'], default: 'jugador' }, // Define rol
     fotoPerfil: { type: String }, // URL o ruta local

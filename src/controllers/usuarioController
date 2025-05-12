@@ -1,0 +1,92 @@
+const jwt = require('jsonwebtoken');
+const Usuario = require('../models/Usuario');
+
+const signToken = (usuario) => {
+    return jwt.sign(
+        { id: usuario._id, nombreUsuario: usuario.nombreUsuario, rol: usuario.rol },
+        process.env.JWT_SECRET,
+        { expiresIn: process.env.JWT_EXPIRES_IN }
+    );
+};
+
+// Registro de usuario
+exports.signup = async (req, res) => {
+    try {
+        const { nombreUsuario, nombre, apellido, correo, contrasena, rol } = req.body;
+        // Crear usuario
+        const nuevoUsuario = await Usuario.create({
+            nombreUsuario, nombre, apellido, correo, contrasena, rol
+        });
+        const token = signToken(nuevoUsuario);
+
+        res.status(201).json({
+            status: 'success',
+            token,
+            data: { usuario: nuevoUsuario }
+        });
+    } catch (error) {
+        res.status(400).json({ status: 'fail', message: error.message });
+    }
+};
+
+// Inicio de sesión
+exports.login = async (req, res) => {
+    try {
+        const { nombreUsuario, contrasena } = req.body;
+        if (!nombreUsuario || !contrasena) {
+            return res.status(400).json({
+                status: 'fail',
+                message: 'Debes proporcionar nombre de usuario y contraseña.'
+            });
+        }
+
+        const usuario = await Usuario.findOne({ nombreUsuario });
+        if (!usuario || !(await usuario.compararPassword(contrasena))) {
+            return res.status(401).json({
+                status: 'fail',
+                message: 'Usuario o contraseña incorrectos.'
+            });
+        }
+
+        const token = signToken(usuario);
+        res.status(200).json({
+            status: 'success',
+            token,
+            data: { usuario }
+        });
+    } catch (error) {
+        res.status(500).json({ status: 'error', message: error.message });
+    }
+};
+
+// Middleware: proteger rutas con JWT
+exports.protect = async (req, res, next) => {
+    let token;
+    if (req.headers.authorization?.startsWith('Bearer')) {
+        token = req.headers.authorization.split(' ')[1];
+    }
+    if (!token) {
+        return res.status(401).json({ status: 'fail', message: 'No autenticado.' });
+    }
+
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const usuario = await Usuario.findById(decoded.id);
+        if (!usuario) throw new Error('Usuario no encontrado.');
+
+        req.usuario = usuario;
+        next();
+    } catch (err) {
+        res.status(401).json({ status: 'fail', message: 'Token inválido o expirado.' });
+    }
+};
+
+// Middleware: restringir por rol (e.g. 'administrador')
+exports.restrictTo = (...roles) => {
+    return (req, res, next) => {
+        if (!roles.includes(req.usuario.rol)) {
+            return res.status(403).json({ status: 'fail', message: 'No tienes permiso.' });
+        }
+        next();
+    };
+};
