@@ -12,7 +12,7 @@ router.post("/preguntas", (req, res) => {
 
 //Consulta de preguntas en general
 router.get("/preguntas", (req, res) => {
-    preguntasSchema.find()
+    preguntasSchema.find().populate("categoria")
         .then((data) => res.json(data))
         .catch((error) => res.json({ message: error }));
 });
@@ -20,7 +20,7 @@ router.get("/preguntas", (req, res) => {
 //Consulta de preguntas por su id
 router.get("/preguntas/:id", (req, res) => {
     const { id } = req.params;
-    preguntasSchema.findById(id)
+    preguntasSchema.findById(id).populate("categoria")
         .then((data) => res.json(data))
         .catch((error) => res.json({ message: error }));
 });

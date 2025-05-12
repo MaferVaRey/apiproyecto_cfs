@@ -29,6 +29,12 @@ const preguntaSchema = mongoose.Schema({
     respuestaCorrecta: {
         type: String,
         required: true
+    },
+
+    categoria: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Categorias",
+        required: true
     }
 })
 module.exports = mongoose.model("Preguntas", preguntaSchema);
