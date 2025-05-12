@@ -20,7 +20,7 @@ mongoose
     .catch((error) => console.log(error));
 app.listen(port, () => {
     console.log(`Example app listening on port ${port}`)
-});s
+});
 
 // Manejo de rutas no encontradas
 app.all('*', (req, res) =>
