@@ -4,7 +4,7 @@ const app = express();
 const port = 3000;
 const preguntasRoutes = require("./routes/preguntas.js");
 const categoriaRoutes = require("./routes/categoria.js");
-const usuarioRoute = require("./routes/usuarioRoute");
+const usuarioRoute = require("./routes/usuarioRoute.js");
 const mongoose = require("mongoose");
 
 require('dotenv').config();

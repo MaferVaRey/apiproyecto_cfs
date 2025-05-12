@@ -3,7 +3,7 @@ const router = express.Router();
 const categoriaSchema = require("../models/categoria.js");
 
 router.post("/categoria", (req, res) => {
-    const categoria = preguntasSchema(req.body);
+    const categoria = categoriaSchema(req.body);
     categoria.save()
         .then((data) => res.json(data))
         .catch((error) => res.json({ message: error }));
@@ -37,3 +37,5 @@ router.delete("/categoria/:id", (req, res) => {
         .then((data) => {res.json(data);})
         .catch((error) => {res.json({ message: error });});
 });
+
+module.exports = router;
