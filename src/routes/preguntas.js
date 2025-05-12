@@ -4,8 +4,8 @@ const preguntasSchema = require("../models/preguntas");
 
 //Creación de preguntas
 router.post("/preguntas", (req, res) => {
-    const animal = preguntasSchema(req.body);
-    animal.save()
+    const pregunta = preguntasSchema(req.body);
+    pregunta.save()
         .then((data) => res.json(data))
         .catch((error) => res.json({ message: error }));
 });

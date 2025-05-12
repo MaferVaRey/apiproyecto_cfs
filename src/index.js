@@ -3,7 +3,8 @@ const express = require('express');
 const app = express();
 const port = 3000;
 const preguntasRoutes = require("./routes/preguntas.js");
-const usuarioRoute = require("./routes/usuarioRoute")
+const categoriaRoutes = require("./routes/categoria.js");
+const usuarioRoute = require("./routes/usuarioRoute");
 const mongoose = require("mongoose");
 
 require('dotenv').config();
