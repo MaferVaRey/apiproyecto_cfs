@@ -1,0 +1,67 @@
+const jwt = require('jsonwebtoken');
+const User = require('../models/usuarioModel');
+
+const signToken = user => {
+    return jwt.sign(
+        { id: user._id, username: user.username, role: user.role },
+        process.env.JWT_SECRET,
+        { expiresIn: process.env.JWT_EXPIRES_IN }
+    );
+};
+
+exports.signup = async (req, res) => {
+    try {
+        const { username, email, password, name, role } = req.body;
+        // Opcional: validaciones de express-validator antes
+        const user = await User.create({ username, email, password, name, role });
+        const token = signToken(user);
+        res.status(201).json({ status: 'success', token, data: { user } });
+    } catch (err) {
+        res.status(400).json({ status: 'fail', message: err.message });
+    }
+};
+
+exports.login = async (req, res) => {
+    try {
+        const { username, password } = req.body;
+        if (!username || !password) {
+            return res.status(400).json({ status: 'fail', message: 'Debes proporcionar usuario y contraseña.' });
+        }
+        const user = await User.findOne({ username });
+        if (!user || !(await user.comparePassword(password))) {
+            return res.status(401).json({ status: 'fail', message: 'Usuario o contraseña incorrectos.' });
+        }
+        const token = signToken(user);
+        res.status(200).json({ status: 'success', token, data: { user } });
+    } catch (err) {
+        res.status(500).json({ status: 'error', message: err.message });
+    }
+};
+
+exports.protect = async (req, res, next) => {
+    let token;
+    if (req.headers.authorization?.startsWith('Bearer')) {
+        token = req.headers.authorization.split(' ')[1];
+    }
+    if (!token) {
+        return res.status(401).json({ status: 'fail', message: 'No estás autenticado.' });
+    }
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const user = await User.findById(decoded.id);
+        if (!user) throw new Error('Usuario no encontrado.');
+        req.user = user;
+        next();
+    } catch (err) {
+        res.status(401).json({ status: 'fail', message: 'Token inválido o expirado.' });
+    }
+};
+
+exports.restrictTo = (...roles) => {
+    return (req, res, next) => {
+        if (!roles.includes(req.user.role)) {
+            return res.status(403).json({ status: 'fail', message: 'No tienes permiso para realizar esta acción.' });
+        }
+        next();
+    };
+};
