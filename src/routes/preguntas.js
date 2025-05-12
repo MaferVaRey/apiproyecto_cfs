@@ -28,7 +28,7 @@ router.get("/preguntas/:id", (req, res) => {
 //Modificar una pregunta por su id
 router.put("/preguntas/:id", (req, res) => {
     const { id } = req.params;
-    const { nombre, edad, tipo, fecha } = req.body;
+    const { pregunta, solucionA, solucionB, solucionC, solucionD, respuestaCorrecta } = req.body;
     preguntasSchema.updateOne({ _id: id }, {
             $set: { pregunta, solucionA, solucionB, solucionC, solucionD, respuestaCorrecta }})
         .then((data) => res.json(data))
