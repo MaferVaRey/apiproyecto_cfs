@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const preguntasSchema = require("../models/preguntas");
+const Preguntas = require('../models/preguntas');
 
 //Creación de preguntas
 router.post("/preguntas", (req, res) => {
@@ -9,6 +10,15 @@ router.post("/preguntas", (req, res) => {
         .then((data) => res.json(data))
         .catch((error) => res.json({ message: error }));
 });
+
+//Consultar preguntas por caetgoría
+router.get('/preguntas/categoria-id/:id', async (req, res) => {
+    const categoriaId = req.params.id;
+    Preguntas.find({ categoria: categoriaId })
+        .then((data) => res.json(data))
+        .catch((error) => res.json({ message: error }));
+});
+
 
 //Consulta de preguntas en general
 router.get("/preguntas", (req, res) => {

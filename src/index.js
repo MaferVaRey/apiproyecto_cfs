@@ -26,7 +26,7 @@ mongoose
   .catch((error) => console.log(error));
 //Conexión al puerto
 app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`);
+  console.log(`Escuchando en el puerto ${port}`);
   
 });
 
