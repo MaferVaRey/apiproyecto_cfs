@@ -7,6 +7,7 @@ const port = 3000;
 const preguntasRoutes = require("./routes/preguntas.js");
 const categoriaRoutes = require("./routes/categoria.js");
 const autenticaionRoute = require("./routes/autenticacion.js");
+const usuarioRoute = require("./routes/usuarioRoute.js");
 
 require('dotenv').config();
 
@@ -17,6 +18,7 @@ app.use(express.json());
 app.use("/api", preguntasRoutes);
 app.use("/api", categoriaRoutes);
 app.use("/api", autenticaionRoute);
+app.use("/api", usuarioRoute);
 
 mongoose
   .connect(process.env.MONGODB_URI)
