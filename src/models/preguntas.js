@@ -1,35 +1,39 @@
 const mongoose  = require("mongoose");
+
+
+const opcionSchema = mongoose.Schema({
+    opcion: {
+        type: String,
+        required: true,
+    },
+    correcta: {
+        type: Boolean,
+        default: false
+    }
+});
+
 const preguntaSchema = mongoose.Schema({
-
-    pregunta: {
+    enunciado: {
         type: String,
         required: true
     },
 
-    solucionA: {
-        type: String,
-        required: true
-    },
-
-    solucionB: {
-        type: String,
-        required: true
-    },
-
-    solucionC: {
-        type: String,
-        required: true
-    },
-
-    solucionD: {
-        type: String,
-        required: true
-    },
-
-    respuestaCorrecta: {
-        type: String,
-        required: true
-    },
+    opciones:{
+        type: [opcionSchema],
+        validate: [
+      {
+        validator: function(value) {
+          return value.length === 4;
+        },
+      },
+      {
+        validator: function(value) {
+          const correctas = value.filter(opcion => opcion.correcta);
+          return correctas.length === 1;
+        },
+      }
+    ]
+  },
 
     categoria: {
         type: mongoose.Schema.Types.ObjectId,
