@@ -18,8 +18,11 @@ const partidaSchema = mongoose.Schema({
         default: 0
     },
     preguntasRespondidas: [{
-        type: mongoose.Schema.Types.ObjectId,
+        idPregunta: {type: mongoose.Schema.Types.ObjectId,
         ref: "Preguntas"
-    }]
+    },
+    respuestaUsuario: String,
+    esCorrecta: Boolean
+}]
 })
 module.exports = mongoose.model("Partidas", partidaSchema);

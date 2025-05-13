@@ -78,7 +78,11 @@ router.post("/partidas/:idPartida/responder", async (req, res) => {
         }
 
         // Marcar la pregunta como respondida
-        partida.preguntasRespondidas.push(idPregunta);
+        partida.preguntasRespondidas.push({
+            idPregunta,
+            respuestaUsuario: respuestaSeleccionada,
+            esCorrecta
+          });
 
         // Guardar cambios
         await partida.save();
@@ -94,23 +98,33 @@ router.post("/partidas/:idPartida/responder", async (req, res) => {
     }
 });
     // Mostrar resumen
-router.get("/partidas/:idPartida/resumen", async (req, res) => {
-    const { idPartida } = req.params;
-
-    try {
-        const partida = await partidaSchema.findById(idPartida);
-        if (!partida) {
-            return res.status(404).json({ message: "Partida no encontrada" });
+    router.get("/partidas/:idPartida/resumen", async (req, res) => {
+        const { idPartida } = req.params;
+    
+        try {
+            const partida = await partidaSchema.findById(idPartida).populate("preguntasRespondidas.idPregunta");
+            if (!partida) return res.status(404).json({ message: "Partida no encontrada" });
+    
+            // Filtrar preguntas mal respondidas
+            const respuestasIncorrectas = partida.preguntasRespondidas
+                .filter(p => !p.esCorrecta)
+                .map(p => ({
+                    pregunta: p.idPregunta.pregunta,
+                    respuestaCorrecta: p.idPregunta.respuestaCorrecta,
+                    respuestaUsuario: p.respuestaUsuario
+                }));
+    
+            res.json({
+                puntajeFinal: partida.puntajeFinal,
+                tiempoRestante: partida.tiempoRestante,
+                totalPreguntas: partida.preguntasRespondidas.length,
+                respuestasIncorrectas
+            });
+    
+        } catch (error) {
+            res.status(500).json({ message: error.message });
         }
-
-        res.json({
-            puntajeFinal: partida.puntajeFinal,
-            tiempoRestante: partida.tiempoRestante,
-            preguntasRespondidas: partida.preguntasRespondidas.length
-        });
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-});
+    });
+    
 
 module.exports = router;
