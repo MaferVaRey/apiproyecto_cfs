@@ -3,7 +3,7 @@ const partidaSchema = mongoose.Schema({
 
     idUsuario: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Usuario", // Asegúrate de que coincida con el nombre del modelo de usuario
+        ref: "Usuario",
         required: true
     },
     fechaInicio: {
@@ -16,6 +16,10 @@ const partidaSchema = mongoose.Schema({
     puntajeFinal: {
         type: Number,
         default: 0
-    }
+    },
+    preguntasRespondidas: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Preguntas"
+    }]
 })
 module.exports = mongoose.model("Partidas", partidaSchema);
