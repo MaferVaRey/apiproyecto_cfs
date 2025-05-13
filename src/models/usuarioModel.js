@@ -7,22 +7,15 @@ const usuarioSchema = new mongoose.Schema({
     nombre: { type: String, required: true },
     apellido: { type: String, required: true },
     correo: { type: String, required: true, unique: true, lowercase: true },
-    contrasena: { type: String, required: true },
-    rol: { type: String, enum: ['jugador', 'administrador'], default: 'jugador' }, // Define rol
-    fotoPerfil: { type: String }, // URL o ruta local
+    clave: { type: String, required: true },
+    rol: { type: String, enum: ['jugador', 'administrador'], default: 'jugador' }, // Define el rol
     fechaRegistro: { type: Date, default: Date.now }
 
 });
 
-usuarioSchema.pre('save', async function (next) {
-    if (!this.isModified('contrasena')) return next();
+usuarioSchema.methods.encryptClave = async (clave) => {
     const salt = await bcrypt.genSalt(10);
-    this.contrasena = await bcrypt.hash(this.contrasena, salt);
-    next();
-});
-
-usuarioSchema.methods.compararPassword = function (pass) {
-    return bcrypt.compare(pass, this.contrasena);
-};
+    return bcrypt.hash(clave, salt);
+}
 
 module.exports = mongoose.model('Usuario', usuarioSchema);
