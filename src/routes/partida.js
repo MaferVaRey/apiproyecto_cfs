@@ -93,5 +93,24 @@ router.post("/partidas/:idPartida/responder", async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 });
+    // Mostrar resumen
+router.get("/partidas/:idPartida/resumen", async (req, res) => {
+    const { idPartida } = req.params;
+
+    try {
+        const partida = await partidaSchema.findById(idPartida);
+        if (!partida) {
+            return res.status(404).json({ message: "Partida no encontrada" });
+        }
+
+        res.json({
+            puntajeFinal: partida.puntajeFinal,
+            tiempoRestante: partida.tiempoRestante,
+            preguntasRespondidas: partida.preguntasRespondidas.length
+        });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
 
 module.exports = router;
