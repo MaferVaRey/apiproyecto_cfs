@@ -60,7 +60,7 @@ router.delete('/usuarios/:id', verifyToken, async (req, res, next) => {
   try {
     const user = await Usuario.findByIdAndDelete(req.params.id).select('-clave');
     if (!user) return res.status(404).json({ error: 'No encontrado' });
-    res.status(204).end();
+    res.json({ message: 'Se eliminó usuario correctamente' });
   } catch (err) {
     next(err);
   }

@@ -10,7 +10,7 @@ router.post("/signup", async (req, res) => {
     const { nombreUsuario, nombre, apellido, correo, clave, rol } = req.body;
     
     const user = new userSchema({
-        usuario: nombreUsuario,
+        nombreUsuario: nombreUsuario,
         nombre: nombre,
         apellido: apellido,
         correo: correo,
@@ -42,8 +42,9 @@ router.post("/login", async (req, res) => {
     if (!validPassword)
         return res.status(400).json({ error: "Clave no válida" });
     res.json({
-        error: null,
-        data: "Bienvenido(a)",
+        auth: true,
+        message: `¡Bienvenido(a), ${user.nombre} ${user.apellido}!`
+
     });
 });
 
