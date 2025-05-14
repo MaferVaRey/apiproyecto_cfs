@@ -38,4 +38,17 @@ router.delete("/categoria/:id", (req, res) => {
         .catch((error) => {res.json({ message: error });});
 });
 
+router.get("/categoria/nombre/:nombre", (req, res) => {
+    const { nombre } = req.params;
+    categoriaSchema.findOne({ nombre: nombre })
+        .then((data) => {
+            if (data) {
+                res.json(data);
+            } else {
+                res.status(404).json({ message: "Categoría no encontrada" });
+            }
+        })
+        .catch((error) => res.status(500).json({ message: error }));
+});
+
 module.exports = router;
