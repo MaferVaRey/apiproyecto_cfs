@@ -1,6 +1,6 @@
-const mongoose  = require("mongoose");
-const partidaSchema = mongoose.Schema({
+const mongoose = require("mongoose");
 
+const partidaSchema = new mongoose.Schema({
     idUsuario: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Usuario",
@@ -8,21 +8,25 @@ const partidaSchema = mongoose.Schema({
     },
     fechaInicio: {
         type: Date,
-        default: Date.now
-    },
-    fechaFin: {
-        type: Date
+        required: true
     },
     puntajeFinal: {
         type: Number,
         default: 0
     },
-    preguntasRespondidas: [{
-        idPregunta: {type: mongoose.Schema.Types.ObjectId,
-        ref: "Preguntas"
+    tiempoRestante: {
+        type: Number,
+        default: 60 
     },
-    respuestaUsuario: String,
-    esCorrecta: Boolean
-}]
-})
-module.exports = mongoose.model("Partidas", partidaSchema);
+    preguntasRespondidas: [{
+        idPregunta: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Pregunta"
+        },
+        respuestaUsuario: String,
+        esCorrecta: Boolean
+    }]
+});
+
+const Partida = mongoose.model("Partida", partidaSchema);
+module.exports = { Partida };
