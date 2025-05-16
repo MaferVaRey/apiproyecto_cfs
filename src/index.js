@@ -8,6 +8,7 @@ const preguntasRoutes = require("./routes/preguntas.js");
 const categoriaRoutes = require("./routes/categoria.js");
 const autenticaionRoute = require("./routes/autenticacion.js");
 const usuarioRoute = require("./routes/usuarioRoute.js");
+const partidaRoute = require("./routes/partida.js");
 
 require('dotenv').config();
 
@@ -19,6 +20,7 @@ app.use("/api", preguntasRoutes);
 app.use("/api", categoriaRoutes);
 app.use("/api", autenticaionRoute);
 app.use("/api", usuarioRoute);
+app.use("/api", partidaRoute);
 
 mongoose
   .connect(process.env.MONGODB_URI)
