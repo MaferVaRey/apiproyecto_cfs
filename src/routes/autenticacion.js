@@ -41,10 +41,16 @@ router.post("/login", async (req, res) => {
     const validPassword = await bcrypt.compare(req.body.clave, user.clave);
     if (!validPassword)
         return res.status(400).json({ error: "Clave no válida" });
+
+    // Generar token igual que en signup
+    const token = jwt.sign({ id: user._id }, process.env.SECRET, {
+        expiresIn: 60 * 60 * 24,
+    });
+
     res.json({
         auth: true,
+        token,  // Token agregado aquí
         message: `¡Bienvenido(a), ${user.nombre} ${user.apellido}!`
-
     });
 });
 
