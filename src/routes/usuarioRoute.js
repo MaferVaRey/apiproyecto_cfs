@@ -5,24 +5,21 @@ const verifyToken = require('./validate-token');
 const Usuario = require('../models/usuarioModel');
 
 // Crear usuario
-router.post('/usuarios', async (req, res, next) => {
-  try {
-    const { nombreUsuario, nombre, apellido, correo, clave, rol } = req.body;
-    // Verificar usuario o correo existente
-    const exist = await Usuario.findOne({ $or: [{ nombreUsuario }, { correo }] });
-    if (exist) return res.status(409).json({ error: 'Usuario o correo ya existe' });
+router.post("/usuarios", (req, res) => {
+  // Se crea un nuevo usuario, asignando la contraseña por defecto
+  const usuario = new usuarioSchema({
+    ...req.body,
+    clave: "Bogota2025*" // Contraseña por defecto
+  });
 
-    // Encriptar y guardar
-    const hashed = await bcrypt.hash(clave, 10);
-    const user = await new Usuario({ nombreUsuario, nombre, apellido, correo, clave: hashed, rol }).save();
-    res.status(201).json({ ...user.toObject(), clave: undefined });
-  } catch (err) {
-    next(err);
-  }
+  usuarioSchema
+    .save()
+    .then((data) => res.json(data))
+    .catch((error) => res.json({ message: error }));
 });
 
 // Obtener todos los usuarios
-router.get('/usuarios', verifyToken, async (req, res, next) => {
+router.get('/usuarios', async (req, res, next) => {
   try {
     const users = await Usuario.find().select('-clave');
     res.json(users);
@@ -32,7 +29,7 @@ router.get('/usuarios', verifyToken, async (req, res, next) => {
 });
 
 // Obtener usuario por id
-router.get('/usuarios/:id', verifyToken, async (req, res, next) => {
+router.get('/usuarios/:id', async (req, res, next) => {
   try {
     const user = await Usuario.findById(req.params.id).select('-clave');
     if (!user) return res.status(404).json({ error: 'No encontrado' });
@@ -43,7 +40,7 @@ router.get('/usuarios/:id', verifyToken, async (req, res, next) => {
 });
 
 // Actualizar usuario
-router.put('/usuarios/:id', verifyToken, async (req, res, next) => {
+router.put('/usuarios/:id', async (req, res, next) => {
   try {
     const data = { ...req.body };
     if (data.clave) data.clave = await bcrypt.hash(data.clave, 10);
@@ -56,7 +53,7 @@ router.put('/usuarios/:id', verifyToken, async (req, res, next) => {
 });
 
 // Eliminar usuario
-router.delete('/usuarios/:id', verifyToken, async (req, res, next) => {
+router.delete('/usuarios/:id', async (req, res, next) => {
   try {
     const user = await Usuario.findByIdAndDelete(req.params.id).select('-clave');
     if (!user) return res.status(404).json({ error: 'No encontrado' });
