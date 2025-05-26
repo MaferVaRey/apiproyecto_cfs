@@ -3,6 +3,7 @@ const router = express.Router();
 const { Partida } = require("../models/partida");
 const { Pregunta } = require("../models/preguntas");
 const { Categoria } = require("../models/categoria");
+const categoriaSchema = require("../models/categoria.js");
 
 // Crear una nueva partida
 router.post("/partidas", async (req, res) => {
@@ -27,7 +28,7 @@ router.post("/partidas", async (req, res) => {
 // Girar la ruleta y seleccionar una categoría
 router.get("/partidas/:idPartida/ruleta", async (req, res) => {
     try {
-        const categorias = await Categoria.find();
+        const categorias = await categoriaSchema.find();
         if (categorias.length === 0) {
             return res.status(404).json({ message: "No hay categorías disponibles." });
         }
