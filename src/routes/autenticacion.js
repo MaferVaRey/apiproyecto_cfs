@@ -2,14 +2,14 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const express = require("express");
 const router = express.Router();
-const userSchema = require("../models/usuarioModel");
+const Usuario = require("../models/usuarioModel");
 
 //registro de usuario
 router.post("/signup", async (req, res) => {
 
     const { nombreUsuario, nombre, apellido, correo, clave, rol } = req.body;
-    
-    const user = new userSchema({
+
+    const user = new Usuario({
         nombreUsuario: nombreUsuario,
         nombre: nombre,
         apellido: apellido,
@@ -19,7 +19,7 @@ router.post("/signup", async (req, res) => {
     });
 
     user.clave = await user.encryptClave(user.clave);
-    await user.save(); 
+    await user.save();
     const token = jwt.sign({ id: user._id }, process.env.SECRET, {
         expiresIn: 60 * 60 * 24,
     });
@@ -30,28 +30,45 @@ router.post("/signup", async (req, res) => {
     });
 });
 
-//inicio de sesión
-router.post("/login", async (req, res) => { 
-    const { error } = userSchema.validate(req.body.correo, req.body.clave);
-    if (error) return res.status(400).json({ error: error.details[0].message });
-    
-    const user = await userSchema.findOne({ correo: req.body.correo });
-    if (!user) return res.status(400).json({ error: "Usuario no encontrado" });
-    
-    const validPassword = await bcrypt.compare(req.body.clave, user.clave);
-    if (!validPassword)
-        return res.status(400).json({ error: "Clave no válida" });
+// inicio de sesión
+router.post('/login', async (req, res) => {
+  try {
+    const { correo, clave } = req.body;
 
-    // Generar token igual que en signup
-    const token = jwt.sign({ id: user._id }, process.env.SECRET, {
-        expiresIn: 60 * 60 * 24,
-    });
+    // Validación básica
+    if (!correo || !clave) {
+      return res.status(400).json({ error: 'Correo y clave son obligatorios' });
+    }
 
-    res.json({
-        auth: true,
-        token,  // Token agregado aquí
-        message: `¡Bienvenido(a), ${user.nombre} ${user.apellido}!`
+    // Busca el usuario por correo
+    const user = await Usuario.findOne({ correo });
+    if (!user) {
+      return res.status(404).json({ error: 'Usuario no encontrado' });
+    }
+
+    // Compara la contraseña
+    const validPassword = await bcrypt.compare(clave, user.clave);
+    if (!validPassword) {
+      return res.status(401).json({ error: 'Clave no válida' });
+    }
+
+    // Genera el JWT incluyendo el rol
+    const token = jwt.sign(
+      { id: user._id, rol: user.rol },
+      process.env.SECRET,
+      { expiresIn: '24h' }
+    );
+
+    // Responde con auth, mensaje y token
+    return res.status(200).json({
+      auth: true,
+      message: `¡Bienvenido(a), ${user.nombre} ${user.apellido}!`,
+      token
     });
+  } catch (err) {
+    console.error('Error en /login:', err);
+    return res.status(500).json({ error: 'Error interno del servidor' });
+  }
 });
 
 module.exports = router;
