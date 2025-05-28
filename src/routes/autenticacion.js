@@ -20,7 +20,7 @@ router.post("/signup", async (req, res) => {
 
     user.clave = await user.encryptClave(user.clave);
     await user.save();
-    const token = jwt.sign({ id: user._id }, process.env.SECRET, {
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
         expiresIn: 60 * 60 * 24,
     });
 
@@ -51,11 +51,12 @@ router.post('/login', async (req, res) => {
     if (!validPassword) {
       return res.status(401).json({ error: 'Clave no válida' });
     }
+    
 
     // Genera el JWT incluyendo el rol
     const token = jwt.sign(
       { id: user._id, rol: user.rol },
-      process.env.SECRET,
+      process.env.JWT_SECRET,
       { expiresIn: '24h' }
     );
 
@@ -63,7 +64,8 @@ router.post('/login', async (req, res) => {
     return res.status(200).json({
       auth: true,
       message: `¡Bienvenido(a), ${user.nombre} ${user.apellido}!`,
-      token
+      token,
+  
     });
   } catch (err) {
     console.error('Error en /login:', err);

@@ -1,23 +1,23 @@
 const express = require("express");
 const router = express.Router();
-const categoriaSchema = require("../models/categoria.js");
+const Categoria = require("../models/categoria.js");
 
 router.post("/categoria", (req, res) => {
-    const categoria = categoriaSchema(req.body);
+    const categoria = Categoria(req.body);
     categoria.save()
         .then((data) => res.json(data))
         .catch((error) => res.json({ message: error }));
 });
 
 router.get("/categoria", (req, res) => {
-    categoriaSchema.find()
-        .then((data) => res.json(data))
+    Categoria.find()
+        .then((data) => res.json(data)) 
         .catch((error) => res.json({ message: error }));
 });
 
 router.get("/categoria/:id", (req, res) => {
     const { id } = req.params;
-    categoriaSchema.findById(id)
+    Categoria.findById(id)
         .then((data) => res.json(data))
         .catch((error) => res.json({ message: error }));
 });
@@ -25,7 +25,7 @@ router.get("/categoria/:id", (req, res) => {
 router.put("/categoria/:id", (req, res) => {
     const { id } = req.params;
     const { nombre } = req.body;
-    categoriaSchema.updateOne({ _id: id }, {
+    Categoria.updateOne({ _id: id }, {
             $set: { nombre }})
         .then((data) => res.json(data))
         .catch((error) => res.json({ message: error }));
@@ -33,14 +33,14 @@ router.put("/categoria/:id", (req, res) => {
 
 router.delete("/categoria/:id", (req, res) => {
     const { id } = req.params;
-    categoriaSchema.findByIdAndDelete(id)
+    Categoria.findByIdAndDelete(id)
         .then((data) => {res.json(data);})
         .catch((error) => {res.json({ message: error });});
 });
 
 router.get("/categoria/nombre/:nombre", (req, res) => {
     const { nombre } = req.params;
-    categoriaSchema.findOne({ nombre: nombre })
+    Categoria.findOne({ nombre: nombre })
         .then((data) => {
             if (data) {
                 res.json(data);

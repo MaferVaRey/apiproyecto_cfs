@@ -3,6 +3,7 @@ const express = require('express');
 const app = express();
 const mongoose = require("mongoose");
 const port = 3000;
+const cors = require('cors');
 
 const preguntasRoutes = require("./routes/preguntas.js");
 const categoriaRoutes = require("./routes/categoria.js");
@@ -15,6 +16,7 @@ require('dotenv').config();
 app.use(parser.urlencoded({ extended: false }));
 app.use(parser.json());
 app.use(express.json());
+app.use(cors());
 
 app.use("/api", preguntasRoutes);
 app.use("/api", categoriaRoutes);

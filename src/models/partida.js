@@ -29,4 +29,4 @@ const partidaSchema = new mongoose.Schema({
 });
 
 const Partida = mongoose.model("Partida", partidaSchema);
-module.exports = { Partida };
+module.exports = Partida ;

@@ -1,13 +1,15 @@
 const express = require("express");
 const router = express.Router();
-const { Partida } = require("../models/partida");
+const  Partida  = require("../models/partida");
 const { Pregunta } = require("../models/preguntas");
-const { Categoria } = require("../models/categoria");
-const categoriaSchema = require("../models/categoria.js");
+const  Categoria  = require("../models/categoria");
+
 
 // Crear una nueva partida
 router.post("/partidas", async (req, res) => {
     const { idUsuario } = req.body;
+    console.log("📥 Recibido POST /partidas con body:", req.body);
+    console.log("ID de usuario recibido:", idUsuario);
 
     try {
         const nuevaPartida = new Partida({
@@ -18,46 +20,52 @@ router.post("/partidas", async (req, res) => {
             preguntasRespondidas: []
         });
 
+        console.log("🛠 Guardando partida...");
         const partidaGuardada = await nuevaPartida.save();
+        console.log("✅ Partida guardada:", partidaGuardada);
+
         res.json(partidaGuardada);
     } catch (error) {
+        console.error("❌ Error al guardar partida:", error);
         res.status(500).json({ message: error.message });
     }
 });
-
-// Girar la ruleta y seleccionar una categoría
-router.get("/partidas/:idPartida/ruleta", async (req, res) => {
-    try {
-        const categorias = await categoriaSchema.find();
-        if (categorias.length === 0) {
-            return res.status(404).json({ message: "No hay categorías disponibles." });
-        }
-
-        // Seleccionar categoría aleatoria
-        const categoriaSeleccionada = categorias[Math.floor(Math.random() * categorias.length)];
-        res.json({ categoriaSeleccionada });
-    } catch (error) {
-        res.status(500).json({ message: error.message });
+// Girar ruleta y seleccion de categoria
+router.get("/partidas/:idPartida/ruleta/categoria", async (req, res) => {
+  try {
+    const categorias = await Categoria.find();
+    if (categorias.length === 0) {
+      return res.status(404).json({ message: "No hay categorías disponibles." });
     }
-});
 
-// Seleccionar pregunta aleatoria de una categoría
-router.get("/partidas/:idPartida/categoria/:idCategoria/pregunta", async (req, res) => {
+    const categoriaSeleccionada = categorias[Math.floor(Math.random() * categorias.length)];
+
+    // (Opcional) podrías guardar la categoría seleccionada en la partida si quieres
+    // await Partida.findByIdAndUpdate(req.params.idPartida, { categoriaActual: categoriaSeleccionada._id });
+
+    res.json({ categoriaSeleccionada });
+  } catch (error) {
+    console.error("❌ Error al seleccionar categoría:", error);
+    res.status(500).json({ message: error.message });
+  }
+});
+// GET /preguntas/aleatoria/:idCategoria
+router.get("/preguntas/aleatoria/:idCategoria", async (req, res) => {
+  try {
     const { idCategoria } = req.params;
+    const preguntas = await Pregunta.find({ categoria: idCategoria });
 
-    try {
-        const preguntas = await Pregunta.find({ categoria: idCategoria });
-        if (preguntas.length === 0) {
-            return res.status(404).json({ message: "No hay preguntas en esta categoría." });
-        }
-
-        const preguntaSeleccionada = preguntas[Math.floor(Math.random() * preguntas.length)];
-        res.json({ preguntaSeleccionada });
-    } catch (error) {
-        res.status(500).json({ message: error.message });
+    if (preguntas.length === 0) {
+      return res.status(404).json({ message: "No hay preguntas para esta categoría." });
     }
-});
 
+    const preguntaSeleccionada = preguntas[Math.floor(Math.random() * preguntas.length)];
+    res.json({ preguntaSeleccionada });
+  } catch (error) {
+    console.error("❌ Error al seleccionar pregunta:", error);
+    res.status(500).json({ message: error.message });
+  }
+});
 // Obtener historial de partidas de un usuario
 router.get("/usuarios/:idUsuario/partidas", async (req, res) => {
     const { idUsuario } = req.params;
