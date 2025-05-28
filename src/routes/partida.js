@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const  Partida  = require("../models/partida");
-const { Pregunta } = require("../models/preguntas");
+const  Pregunta  = require("../models/preguntas");
 const  Categoria  = require("../models/categoria");
 
 
