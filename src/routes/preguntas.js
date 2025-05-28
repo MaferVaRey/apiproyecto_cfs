@@ -21,7 +21,7 @@ router.get('/preguntas/categoria-id/:id', async (req, res) => {
 
 //Consulta de preguntas en general
 router.get("/preguntas", (req, res) => {
-    preguntasSchema.find().populate("categoria")
+    preguntasSchema.find()
         .then((data) => res.json(data))
         .catch((error) => res.json({ message: error }));
 });
@@ -29,7 +29,7 @@ router.get("/preguntas", (req, res) => {
 //Consulta de preguntas por su id
 router.get("/preguntas/:id", (req, res) => {
     const { id } = req.params;
-    preguntasSchema.findById(id).populate("categoria")
+    preguntasSchema.findById(id)
         .then((data) => res.json(data))
         .catch((error) => res.json({ message: error }));
 });
@@ -37,9 +37,9 @@ router.get("/preguntas/:id", (req, res) => {
 //Modificar una pregunta por su id
 router.put("/preguntas/:id", (req, res) => {
     const { id } = req.params;
-    const { pregunta, opciones, categoria  } = req.body;
+    const { enunciado, opciones, categoria  } = req.body;
     preguntasSchema.updateOne({ _id: id }, {
-            $set: { pregunta, opciones, categoria }})
+            $set: { enunciado, opciones, categoria }})
         .then((data) => res.json(data))
         .catch((error) => res.json({ message: error }));
 });
