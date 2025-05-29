@@ -53,7 +53,18 @@ router.get("/partidas/:idPartida/ruleta/categoria", async (req, res) => {
 router.get("/preguntas/aleatoria/:idCategoria", async (req, res) => {
   try {
     const { idCategoria } = req.params;
-    const preguntas = await Pregunta.find({ categoria: idCategoria });
+    let exclude = [];
+
+    if (req.query.exclude) {
+      const raw = JSON.parse(req.query.exclude);
+      // Filtra sólo IDs válidos
+      exclude = raw.filter(id => mongoose.Types.ObjectId.isValid(id));
+    }
+
+    const preguntas = await Pregunta.find({
+      categoria: idCategoria,
+      _id: { $nin: exclude }
+    });
 
     if (preguntas.length === 0) {
       return res.status(404).json({ message: "No hay preguntas para esta categoría." });
@@ -61,6 +72,7 @@ router.get("/preguntas/aleatoria/:idCategoria", async (req, res) => {
 
     const preguntaSeleccionada = preguntas[Math.floor(Math.random() * preguntas.length)];
     res.json({ preguntaSeleccionada });
+
   } catch (error) {
     console.error("❌ Error al seleccionar pregunta:", error);
     res.status(500).json({ message: error.message });
@@ -93,64 +105,38 @@ router.get("/partidas/:id", async (req, res) => {
 });
 
 // Responder una pregunta
-router.post("/partidas/:idPartida/responder", async (req, res) => {
-    const { idPartida } = req.params;
-    const { idPregunta, respuestaSeleccionada } = req.body;
+router.post('/partida/responder', async (req, res) => {
+  try {
+    const { idPartida, idPregunta, respuestaUsuario, esCorrecta } = req.body;
 
-    try {
-        const partida = await Partida.findById(idPartida);
-        if (!partida) return res.status(404).json({ message: "Partida no encontrada" });
+    const partida = await Partida.findById(idPartida);
+    if (!partida) return res.status(404).json({ message: 'Partida no encontrada' });
 
-        const preguntaYaRespondida = partida.preguntasRespondidas.some(
-            (p) => p.idPregunta.toString() === idPregunta
-        );
-        if (preguntaYaRespondida) {
-            return res.status(400).json({ message: "Pregunta ya fue respondida en esta partida" });
-        }
+    partida.preguntasRespondidas.push({
+      idPregunta,
+      respuestaUsuario,
+      esCorrecta
+    });
 
-        const pregunta = await Pregunta.findById(idPregunta);
-        if (!pregunta) return res.status(404).json({ message: "Pregunta no encontrada" });
-
-        const esCorrecta = pregunta.opciones.some(
-            (op) => op.opcion === respuestaSeleccionada && op.correcta
-        );
-
-        if (esCorrecta) {
-            partida.puntajeFinal += 1;
-        } else {
-            partida.tiempoRestante = Math.max(partida.tiempoRestante - 5, 0);
-        }
-
-        partida.preguntasRespondidas.push({
-            idPregunta,
-            respuestaUsuario: respuestaSeleccionada,
-            esCorrecta,
-        });
-
-        await partida.save();
-
-        res.json({
-            correcta: esCorrecta,
-            puntajeActual: partida.puntajeFinal,
-            tiempoRestante: partida.tiempoRestante,
-        });
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
+    await partida.save();
+    res.json({ message: 'Respuesta guardada' });
+  } catch (error) {
+    console.error('❌ Error al guardar respuesta:', error);
+    res.status(500).json({ message: error.message });
+  }
 });
-
 // Mostrar resumen de la partida
 router.get("/partidas/:idPartida/resumen", async (req, res) => {
     const { idPartida } = req.params;
 
     try {
-        const partida = await Partida.findById(idPartida).populate("preguntasRespondidas.idPregunta");
+        const partida = await Partida.findById(idPartida).populate("preguntasRespondidas.idPregunta", null, "Preguntas");
         if (!partida) return res.status(404).json({ message: "Partida no encontrada" });
 
         const respuestasIncorrectas = partida.preguntasRespondidas
             .filter((p) => !p.esCorrecta)
             .map((p) => ({
-                pregunta: p.idPregunta.pregunta,
+                pregunta: p.idPregunta.enunciado,
                 respuestaCorrecta: p.idPregunta.opciones.find(op => op.correcta).opcion,
                 respuestaUsuario: p.respuestaUsuario,
             }));
